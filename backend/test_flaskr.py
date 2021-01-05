@@ -48,6 +48,28 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'Resource NOT found')
 
+    def test_retrieve_questions(self):
+        """Test retrieve paginated questions of page 2"""
+        res = self.client().get('/questions?page=2')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['questions'])
+        self.assertTrue(data['total_questions'])
+        self.assertTrue(data['categories'])
+        self.assertEqual(data['current_category'], None)
+
+    def test_404_retrieve_questions(self):
+        """Test 404 for on existing page 1000"""
+        res = self.client().get('/questions?page=1000')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Resource NOT found')
+
+
 # Make the tests conveniently executable
 if __name__ == "__main__":
     unittest.main()

@@ -8,6 +8,20 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
+#Site pagination function
+def paginate_questions(request, response):
+    #Get page from HTML (frontend), default page 1
+    page = request.args.get('page', 1, type=int)
+    #HTML page starts at 1, but list has 0 indexing
+    start = (page - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
+    #Format questions, list comprehension
+    questions = [q.format() for q in response]
+    current_questions = questions[start:end]
+
+    return current_questions
+
+
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
@@ -25,12 +39,14 @@ def create_app(test_config=None):
                                 'GET,POST,DELETE,OPTIONS')
         return response
 
+
     """GET all available categories"""
     @app.route('/categories') #GET
     def retrieve_categories():
-        responses = Category.query.order_by(Category.id).all()
-        categories = [response.format() for response in responses]
-
+        res = Category.query.order_by('id').all()
+        #Fontend needs dict for categories
+        categories = {r.id: r.type for r in res}
+        #If categories empty -> 404
         if len(categories) == 0:
             abort(404)
 
@@ -40,6 +56,28 @@ def create_app(test_config=None):
         })
 
 
+    """GET questions paginated"""
+    @app.route('/questions')
+    def retrieve_questions_paginated():
+        response = Question.query.order_by('id').all()
+        questions = paginate_questions(request, response)
+        #If questions empty of selected page -> 404
+        if len(questions) == 0:
+            abort(404)
+
+        cat_res = Category.query.order_by('id').all()
+        #Fontend needs dict for categories
+        categories = {c.id: c.type for c in cat_res}
+        #All categories by default
+        current_category = None
+
+        return jsonify({
+            "success": True,
+            "questions": questions,
+            "total_questions": len(response),
+            "categories": categories,
+            "current_category": current_category
+        })
     '''
     @TODO:
     Create an endpoint to handle GET requests for questions,
