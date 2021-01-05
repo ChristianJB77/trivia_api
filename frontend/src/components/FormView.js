@@ -14,7 +14,7 @@ class FormView extends Component {
       categories: {}
     }
   }
-
+  //Available categories
   componentDidMount(){
     $.ajax({
       url: `/categories`, //TODO: update request URL

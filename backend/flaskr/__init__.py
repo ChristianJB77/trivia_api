@@ -24,15 +24,20 @@ def create_app(test_config=None):
         response.headers.add('Access-Control-Methods',
                                 'GET,POST,DELETE,OPTIONS')
         return response
-    '''
-    @TODO: Use the after_request decorator to set Access-Control-Allow
-    '''
 
-    '''
-    @TODO:
-    Create an endpoint to handle GET requests
-    for all available categories.
-    '''
+    """GET all available categories"""
+    @app.route('/categories') #GET
+    def retrieve_categories():
+        responses = Category.query.order_by(Category.id).all()
+        categories = [response.format() for response in responses]
+
+        if len(categories) == 0:
+            abort(404)
+
+        return jsonify({
+            "success": True,
+            "categories": categories
+        })
 
 
     '''
@@ -100,10 +105,29 @@ def create_app(test_config=None):
     and shown whether they were correct or not.
     '''
 
-    '''
-    @TODO:
-    Create error handlers for all expected errors
-    including 404 and 422.
-    '''
+    """Error handler"""
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({
+            "success": False,
+            "error": 400,
+            "message": "Bad request"
+        }), 400
+
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            "success": False,
+            "error": 404,
+            "message": "Resource NOT found"
+        }), 404
+
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return jsonify({
+            "success": False,
+            "error": 422,
+            "message": "Unprocessable"
+        })
 
     return app
