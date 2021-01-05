@@ -4,7 +4,9 @@ from flask_sqlalchemy import SQLAlchemy
 import json
 
 database_name = "trivia"
-database_path = "postgres://{}/{}".format('localhost:5432', database_name)
+database_path = "postgres://{}:{}@{}/{}".format(
+    'postgres', 'secret', 'localhost:5432', database_name
+    )
 
 db = SQLAlchemy()
 
@@ -12,6 +14,7 @@ db = SQLAlchemy()
 setup_db(app)
     binds a flask application and a SQLAlchemy service
 '''
+#Database migration not necessary,as already build up, tested and simple
 def setup_db(app, database_path=database_path):
     app.config["SQLALCHEMY_DATABASE_URI"] = database_path
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -23,7 +26,7 @@ def setup_db(app, database_path=database_path):
 Question
 
 '''
-class Question(db.Model):  
+class Question(db.Model):
   __tablename__ = 'questions'
 
   id = Column(Integer, primary_key=True)
@@ -41,7 +44,7 @@ class Question(db.Model):
   def insert(self):
     db.session.add(self)
     db.session.commit()
-  
+
   def update(self):
     db.session.commit()
 
@@ -62,7 +65,7 @@ class Question(db.Model):
 Category
 
 '''
-class Category(db.Model):  
+class Category(db.Model):
   __tablename__ = 'categories'
 
   id = Column(Integer, primary_key=True)
