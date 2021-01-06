@@ -77,7 +77,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['message'], 'Resource NOT found')
 
     def test_new_question(self):
-        """Test POST new questions"""
+        """Test POST new question"""
         res = self.client().post('/questions', json=self.new_question)
         data = json.loads(res.data)
 
@@ -97,6 +97,23 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 405)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], "Method NOT allowed")
+
+    def test_delete_question(self):
+        """Test deleting question by id"""
+        res = self.client().delete('/questions/10')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+    def test_422_delete_question(self):
+        """Test deleting NOT existing question by id=1000"""
+        res = self.client().delete('/questions/1000')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], "Unprocessable")
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
