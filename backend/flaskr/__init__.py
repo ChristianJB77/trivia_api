@@ -78,18 +78,6 @@ def create_app(test_config=None):
             "categories": categories,
             "current_category": current_category
         })
-    '''
-    @TODO:
-    Create an endpoint to handle GET requests for questions,
-    including pagination (every 10 questions).
-    This endpoint should return a list of questions,
-    number of total questions, current category, categories.
-
-    TEST: At this point, when you start the application
-    you should see questions and categories generated,
-    ten questions per page and pagination at the bottom of the screen for three pages.
-    Clicking on the page numbers should update the questions.
-    '''
 
     '''
     @TODO:
@@ -98,17 +86,34 @@ def create_app(test_config=None):
     TEST: When you click the trash icon next to a question, the question will be removed.
     This removal will persist in the database and when you refresh the page.
     '''
+    """POST new question"""
+    @app.route('/questions', methods=['POST'])
+    def new_question():
+        #Get HTML json body response
+        body = request.get_json()
 
-    '''
-    @TODO:
-    Create an endpoint to POST a new question,
-    which will require the question and answer text,
-    category, and difficulty score.
+        try:
+            #Subtract data
+            new_question = body.get('question', None)
+            new_answer = body.get('answer', None)
+            new_difficulty = body.get('difficulty', None)
+            new_category = body.get('category', None)
 
-    TEST: When you submit a question on the "Add" tab,
-    the form will clear and the question will appear at the end of the last page
-    of the questions list in the "List" tab.
-    '''
+            question = Question(
+                question = new_question,
+                answer = new_answer,
+                category = new_category,
+                difficulty = new_difficulty
+                )
+            #Add to db with model method
+            question.insert()
+
+            return jsonify({
+                "success": True,
+            })
+
+        except:
+            abort(405)
 
     '''
     @TODO:
@@ -159,6 +164,14 @@ def create_app(test_config=None):
             "error": 404,
             "message": "Resource NOT found"
         }), 404
+
+    @app.errorhandler(405)
+    def not_found(error):
+        return jsonify({
+            "success": False,
+            "error": 405,
+            "message": "Method NOT allowed"
+        }), 405
 
     @app.errorhandler(422)
     def unprocessable(error):

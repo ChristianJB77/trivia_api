@@ -18,6 +18,13 @@ class TriviaTestCase(unittest.TestCase):
         self.database_path = "postgres://{}:{}@{}/{}".format(
             'postgres', 'secret', 'localhost:5432', self.database_name)
         setup_db(self.app, self.database_path)
+        #New question
+        self.new_question = {
+            "questions": "Who invented the car",
+            "answer": "Carl Benz",
+            "difficulty": 2,
+            "category": "1"
+        }
 
         # binds the app to the current context
         with self.app.app_context():
@@ -69,6 +76,27 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'Resource NOT found')
 
+    def test_new_question(self):
+        """Test POST new questions"""
+        res = self.client().post('/questions', json=self.new_question)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+    def test_405_new_question(self):
+        """Test 405 POST new question"""
+        res = self.client().post('/questions', json={
+                                            "questions": "Who invented the car",
+                                            "answer":1,
+                                            "difficulty":"Very",
+                                            "category": "1"
+                                            })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], "Method NOT allowed")
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
