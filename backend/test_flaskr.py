@@ -100,7 +100,7 @@ class TriviaTestCase(unittest.TestCase):
 
     def test_delete_question(self):
         """Test deleting question by id"""
-        res = self.client().delete('/questions/6')
+        res = self.client().delete('/questions/11')
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -133,6 +133,25 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertEqual(data['total_questions'], 0)
+
+    def test_retrieve_questions_by_category(self):
+        """Test retrieve paginated questions by click selected category"""
+        res = self.client().get('/categories/1/questions')
+        data =json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['total_questions'])
+        self.assertTrue(data['current_category'])
+
+    def test_405_retrieve_questions_by_category(self):
+        """Test 405 for questions by category"""
+        res = self.client().get('/categories/''/questions')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Resource NOT found')
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
