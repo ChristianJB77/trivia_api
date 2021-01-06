@@ -80,6 +80,7 @@ def create_app(test_config=None):
         })
 
 
+    """Delete questions"""
     @app.route('/questions/<int:q_id>', methods=['DELETE'])
     def delete_question(q_id):
         try:
@@ -97,37 +98,58 @@ def create_app(test_config=None):
             abort(422)
 
 
-    """POST new question"""
+    """POST new question / Search question"""
     @app.route('/questions', methods=['POST'])
     def new_question():
         #Get HTML json body response
         body = request.get_json()
 
+        #New question
+        new_question = body.get('question', None)
+        new_answer = body.get('answer', None)
+        new_difficulty = body.get('difficulty', None)
+        new_category = body.get('category', None)
+        #Search question
+        search = body.get('searchTerm', None)
+
         try:
-            #Subtract data
-            new_question = body.get('question', None)
-            new_answer = body.get('answer', None)
-            new_difficulty = body.get('difficulty', None)
-            new_category = body.get('category', None)
+            if search != None:
+                res = Question.query.filter(
+                                Question.question.ilike('%{}%'.format(search)))
+                #Pagination and MUST formating for frontend
+                q = paginate_questions(request, res)
+                #All categories by default
+                current_category = None
 
-            if (new_question == '') or (new_answer == ''):
-                abort(404)
+                return jsonify({
+                    "success": True,
+                    "questions": q,
+                    "total_questions": len(q),
+                    "current_category": current_category
+                })
+            elif search == '':
+                redirect('/questions')
 
-            question = Question(
-                question = new_question,
-                answer = new_answer,
-                category = new_category,
-                difficulty = new_difficulty
-                )
-            #Add to db with model method
-            question.insert()
+            else: #Add new question
+                if (new_question == '') or (new_answer == ''):
+                    abort(404)
 
-            return jsonify({
-                "success": True,
-            })
+                question = Question(
+                    question = new_question,
+                    answer = new_answer,
+                    category = new_category,
+                    difficulty = new_difficulty
+                    )
+                #Add to db with model method
+                question.insert()
+
+                return jsonify({
+                    "success": True,
+                })
 
         except:
             abort(405)
+
 
     '''
     @TODO:
@@ -194,5 +216,13 @@ def create_app(test_config=None):
             "error": 422,
             "message": "Unprocessable"
         }), 422
+
+    @app.errorhandler(500)
+    def unprocessable(error):
+        return jsonify({
+            "success": False,
+            "error": 500,
+            "message": "Internal database error"
+        }), 500
 
     return app

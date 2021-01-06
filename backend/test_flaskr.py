@@ -100,7 +100,7 @@ class TriviaTestCase(unittest.TestCase):
 
     def test_delete_question(self):
         """Test deleting question by id"""
-        res = self.client().delete('/questions/10')
+        res = self.client().delete('/questions/6')
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -114,6 +114,25 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 422)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], "Unprocessable")
+
+    def test_search(self):
+        """Test case-insensitive, sub-string questions search"""
+        res = self.client().post('/questions', json={'searchTerm': 'title'})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['total_questions'])
+
+    def test_search_fail(self):
+        """Test searching non existing sub-string to fail"""
+        res = self.client().post('/questions',
+                                        json={'searchTerm': 'xyzxyzxyzxyz'})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['total_questions'], 0)
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
