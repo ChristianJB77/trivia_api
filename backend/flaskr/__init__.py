@@ -168,7 +168,7 @@ def create_app(test_config=None):
                 "current_category": current_category
             })
         except:
-            abort(405)
+            abort(404)
 
 
     '''
