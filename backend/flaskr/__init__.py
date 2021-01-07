@@ -2,7 +2,7 @@ import os
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-import random
+import random #random quiz choice
 
 from models import setup_db, Question, Category
 
@@ -171,17 +171,47 @@ def create_app(test_config=None):
             abort(404)
 
 
-    '''
-    @TODO:
-    Create a POST endpoint to get questions to play the quiz.
-    This endpoint should take category and previous question parameters
-    and return a random questions within the given category,
-    if provided, and that is not one of the previous questions.
+    """POST play quiz with random questions"""
+    @app.route('/quizzes', methods=['POST'])
+    def play_quiz():
+        try:
+            body = request.get_json()
 
-    TEST: In the "Play" tab, after a user selects "All" or a category,
-    one question at a time is displayed, the user is allowed to answer
-    and shown whether they were correct or not.
-    '''
+            quiz_category = body.get('quiz_category', None)
+            #Get str of user selected category, as category id is strored as string
+            selected_cat = str(quiz_category['id'])
+            #Get list of ids of previous questions
+            previous_qs_ids = body.get('previous_questions', None)
+            #Get random question id of selected category,
+            #which is NOT in list of previous question ids
+            res = 0
+            #All categories or selected category differentiation
+            if selected_cat == '0':
+                res = Question.query.all()
+            else:
+                res = Question.query.filter(Question.category == selected_cat)
+
+            questions = [r.id for r in res]
+            cat_q_ids=[]
+            for q in questions:
+                if q not in previous_qs_ids:
+                    cat_q_ids.append(q)
+            #If all questions of category are asked, return to quiz start page
+            if len(cat_q_ids) == 0:
+                return retrieve_categories()
+            else: #Stay in category and play quiz
+                #Get random question from unused questions of selected category
+                random_id = random.choice(cat_q_ids)
+                res = Question.query.filter(Question.id == random_id)
+                current_q = paginate_questions(request, res)[0]
+
+                return jsonify({
+                    "success": True,
+                    "question": current_q
+                })
+        except:
+            abort(422)
+
 
     """Error handler"""
     @app.errorhandler(400)

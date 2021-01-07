@@ -100,7 +100,7 @@ class TriviaTestCase(unittest.TestCase):
 
     def test_delete_question(self):
         """Test deleting question by id"""
-        res = self.client().delete('/questions/11')
+        res = self.client().delete('/questions/16')
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -152,6 +152,32 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'Resource NOT found')
+
+    def test_play_quiz(self):
+        """Test playing quiz function"""
+        res = self.client().post('/quizzes', json={
+                                            "quiz_category": {"id": 1},
+                                            "previous_questions": [44]
+                                            })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['question'])
+
+
+    def test_422_play_quiz(self):
+        """Test failing play quiz with requesting non existing category"""
+        res = self.client().post('/quizzes', json={
+                                                "quiz_category": {"id": "A"},
+                                                "previous_questions": [44]
+                                                })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], "Unprocessable")
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
