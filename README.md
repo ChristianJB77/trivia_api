@@ -93,8 +93,10 @@ App error handler returns HTTP status codes and json objects in following format
 
 #### Client errors
 - 400: Bad request
-- 404: Resource not found
+- 404: Resource NOT found
+- 405: Method NOT allowed
 - 422: Unprocessable
+- 500: Internal database error
 
 ### Resource endpoint library
 
